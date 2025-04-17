@@ -1,0 +1,52 @@
+diff -up OpenTimeLineIO-0.17.0/CMakeLists.txt.omv~ OpenTimeLineIO-0.17.0/CMakeLists.txt
+--- OpenTimeLineIO-0.17.0/CMakeLists.txt.omv~	2025-04-17 17:35:59.829163115 +0200
++++ OpenTimeLineIO-0.17.0/CMakeLists.txt	2025-04-17 17:36:40.732266213 +0200
+@@ -56,6 +56,7 @@ if(OTIO_PYTHON_INSTALL)
+     find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+     message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+     message(STATUS "Python_VERSION: ${Python_VERSION}")
++    find_package(pybind11 CONFIG REQUIRED)
+ 
+     # reconcile install directories for builds incorporating Python in order
+     # that default behaviors match a reasonable expectation, as follows:
+diff -up OpenTimeLineIO-0.17.0/src/deps/CMakeLists.txt.omv~ OpenTimeLineIO-0.17.0/src/deps/CMakeLists.txt
+--- OpenTimeLineIO-0.17.0/src/deps/CMakeLists.txt.omv~	2025-04-17 17:26:45.321438165 +0200
++++ OpenTimeLineIO-0.17.0/src/deps/CMakeLists.txt	2025-04-17 17:36:18.610859664 +0200
+@@ -4,21 +4,23 @@
+ #----- Other dependencies
+ 
+ # detect if the submodules haven't been updated
+-set(DEPS_SUBMODULES pybind11 rapidjson)
+-foreach(submodule IN LISTS DEPS_SUBMODULES)
+-    file(GLOB SUBMOD_CONTENTS ${submodule})
+-    list(LENGTH SUBMOD_CONTENTS SUBMOD_CONTENT_LEN)
+-    if(SUBMOD_CONTENT_LEN EQUAL 0)
+-        message(
+-            FATAL_ERROR "Error: the submodule ${submodule} is empty.  You may \
+-            need to install git and run: 'git submodule update' to remedy this."
+-        )
+-    endif()
+-endforeach()
++#set(DEPS_SUBMODULES pybind11 rapidjson)
++#foreach(submodule IN LISTS DEPS_SUBMODULES)
++#    file(GLOB SUBMOD_CONTENTS ${submodule})
++#    list(LENGTH SUBMOD_CONTENTS SUBMOD_CONTENT_LEN)
++#    if(SUBMOD_CONTENT_LEN EQUAL 0)
++#        message(
++#            FATAL_ERROR "Error: the submodule ${submodule} is empty.  You may \
++#            need to install git and run: 'git submodule update' to remedy this."
++#        )
++#    endif()
++#endforeach()
++#
++#if(OTIO_PYTHON_INSTALL)
++#    add_subdirectory(pybind11)
++#endif()
+ 
+-if(OTIO_PYTHON_INSTALL)
+-    add_subdirectory(pybind11)
+-endif()
++find_package(RapidJSON REQUIRED)
+ 
+ if (USE_DEPS_IMATH)
+     # preserve BUILD_SHARED_LIBS options for this project, but set it off for Imath

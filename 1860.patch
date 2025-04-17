@@ -1,0 +1,223 @@
+From 1fabbe9afe15eebb2046a91cf5b7f2563e82485d Mon Sep 17 00:00:00 2001
+From: Darby Johnston <darbyjohnston@yahoo.com>
+Date: Fri, 28 Mar 2025 11:51:39 -0700
+Subject: [PATCH 1/5] Add SOVERSION for the C++ libraries
+
+Signed-off-by: Darby Johnston <darbyjohnston@yahoo.com>
+---
+ CMakeLists.txt                    | 9 +++++++++
+ src/opentime/CMakeLists.txt       | 6 ++++++
+ src/opentimelineio/CMakeLists.txt | 6 ++++++
+ 3 files changed, 21 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 333bd6087..0363de718 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -11,6 +11,15 @@ set(OTIO_VERSION_MINOR "18")
+ set(OTIO_VERSION_PATCH "0")
+ set(OTIO_VERSION ${OTIO_VERSION_MAJOR}.${OTIO_VERSION_MINOR}.${OTIO_VERSION_PATCH})
+ 
++# Set the SOVERSION. This version should be incremented anytime the ABI
++# changes. OTIO is currently using the minor version number for breaking
++# changes, e.g. v0.15, v0.16.0, v0.17.0, so the SOVERSION should be incremented
++# to match. If the next OTIO version is 0.19.0 and has ABI changes, the
++# SOVERSION should be incremented to 0.19. When OTIO reaches 1.x.x the
++# SOVERSION can be changed to match the major version which is a more
++# common convention.
++set(OTIO_SOVERSION 0.18)
++
+ set(OTIO_AUTHOR       "Contributors to the OpenTimelineIO project")
+ set(OTIO_AUTHOR_EMAIL "otio-discussion@lists.aswf.io")
+ set(OTIO_LICENSE      "Modified Apache 2.0 License")
+diff --git a/src/opentime/CMakeLists.txt b/src/opentime/CMakeLists.txt
+index b7cc47cf4..a973d03fa 100644
+--- a/src/opentime/CMakeLists.txt
++++ b/src/opentime/CMakeLists.txt
+@@ -24,6 +24,12 @@ set_target_properties(opentime PROPERTIES
+     POSITION_INDEPENDENT_CODE TRUE
+     WINDOWS_EXPORT_ALL_SYMBOLS true)
+ 
++if(BUILD_SHARED_LIBS)
++    set_target_properties(opentime PROPERTIES
++        SOVERSION ${OTIO_SOVERSION}
++        VERSION ${OTIO_VERSION})
++endif()
++
+ if(APPLE)
+     set_target_properties(opentime PROPERTIES 
+         INSTALL_NAME_DIR "@loader_path"
+diff --git a/src/opentimelineio/CMakeLists.txt b/src/opentimelineio/CMakeLists.txt
+index 7ccdd3b68..daddc6507 100644
+--- a/src/opentimelineio/CMakeLists.txt
++++ b/src/opentimelineio/CMakeLists.txt
+@@ -92,6 +92,12 @@ set_target_properties(opentimelineio PROPERTIES
+     POSITION_INDEPENDENT_CODE TRUE
+     WINDOWS_EXPORT_ALL_SYMBOLS true)
+ 
++if(BUILD_SHARED_LIBS)
++    set_target_properties(opentimelineio PROPERTIES
++        SOVERSION ${OTIO_SOVERSION}
++        VERSION ${OTIO_VERSION})
++endif()
++
+ if(APPLE)
+     set_target_properties(opentimelineio PROPERTIES 
+         INSTALL_NAME_DIR "@loader_path"
+
+From d494c8f622bb9c68478a31f1a287b989374bd3ae Mon Sep 17 00:00:00 2001
+From: Darby Johnston <darbyjohnston@yahoo.com>
+Date: Fri, 28 Mar 2025 16:42:10 -0700
+Subject: [PATCH 2/5] Base SOVERSION off of the OTIO major and minor version
+
+Signed-off-by: Darby Johnston <darbyjohnston@yahoo.com>
+---
+ CMakeLists.txt | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0363de718..6dce3a084 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -11,15 +11,6 @@ set(OTIO_VERSION_MINOR "18")
+ set(OTIO_VERSION_PATCH "0")
+ set(OTIO_VERSION ${OTIO_VERSION_MAJOR}.${OTIO_VERSION_MINOR}.${OTIO_VERSION_PATCH})
+ 
+-# Set the SOVERSION. This version should be incremented anytime the ABI
+-# changes. OTIO is currently using the minor version number for breaking
+-# changes, e.g. v0.15, v0.16.0, v0.17.0, so the SOVERSION should be incremented
+-# to match. If the next OTIO version is 0.19.0 and has ABI changes, the
+-# SOVERSION should be incremented to 0.19. When OTIO reaches 1.x.x the
+-# SOVERSION can be changed to match the major version which is a more
+-# common convention.
+-set(OTIO_SOVERSION 0.18)
+-
+ set(OTIO_AUTHOR       "Contributors to the OpenTimelineIO project")
+ set(OTIO_AUTHOR_EMAIL "otio-discussion@lists.aswf.io")
+ set(OTIO_LICENSE      "Modified Apache 2.0 License")
+@@ -127,6 +118,13 @@ else()
+     endif()
+ endif()
+ 
++# Set the SOVERSION. This version should be incremented anytime the ABI
++# changes. OTIO is currently using the minor version number for breaking
++# changes, e.g. v0.15, v0.16.0, v0.17.0, so SOVERSION is set as a combination
++# of OTIO_VERSION_MAJOR and OTIO_VERSION_MINOR. When OTIO reaches version 1.x.x
++# then SOVERSION could be changed to track just OTIO_VERSION_MAJOR.
++set(OTIO_SOVERSION ${OTIO_VERSION_MAJOR}.${OTIO_VERSION_MINOR})
++
+ set(OTIO_RESOLVED_CXX_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+ 
+ if(OTIO_CXX_INSTALL)
+
+From c78b63764938b68e634fcf649a74705cf31578e4 Mon Sep 17 00:00:00 2001
+From: Darby Johnston <darbyjohnston@yahoo.com>
+Date: Tue, 1 Apr 2025 12:28:55 -0700
+Subject: [PATCH 3/5] Update comments based on feedback
+
+Signed-off-by: Darby Johnston <darbyjohnston@yahoo.com>
+---
+ CMakeLists.txt | 26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6dce3a084..0691c5c72 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -118,11 +118,27 @@ else()
+     endif()
+ endif()
+ 
+-# Set the SOVERSION. This version should be incremented anytime the ABI
+-# changes. OTIO is currently using the minor version number for breaking
+-# changes, e.g. v0.15, v0.16.0, v0.17.0, so SOVERSION is set as a combination
+-# of OTIO_VERSION_MAJOR and OTIO_VERSION_MINOR. When OTIO reaches version 1.x.x
+-# then SOVERSION could be changed to track just OTIO_VERSION_MAJOR.
++# Set the SO version. The SO version must be incremented every time a change
++# occurs to the ABI that causes a backward incompatibility. Such changes
++# include, exhaustively:
++#
++# * a change to struct or class layout
++# * enum changes that would cause a renumbering of previously published enums
++# * a removal of a struct, class, enumeration, or function
++# * a change in parameters to a free standing function
++# * a removal of a global variable
++#
++# OTIO currently designates the minor version number for breaking changes,
++# e.g. v0.15, v0.16.0, v0.17.0, accordingly the SO version will be incremented
++# to match. So for example, the following OTIO versions would map to these
++# ABI versions:
++#
++# * v0.18.0 - 0.18
++# * v0.19.0 - 0.19
++# * v0.19.1 - 0.19 # No ABI changes with minor version changes
++# * v1.0.0 - 1.0
++# * v1.1.0 - 1.1
++#
+ set(OTIO_SOVERSION ${OTIO_VERSION_MAJOR}.${OTIO_VERSION_MINOR})
+ 
+ set(OTIO_RESOLVED_CXX_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+
+From f7cbab48c362527d3ce9f5cf7ff200d0061f9bd5 Mon Sep 17 00:00:00 2001
+From: Darby Johnston <darbyjohnston@yahoo.com>
+Date: Tue, 1 Apr 2025 17:03:17 -0700
+Subject: [PATCH 4/5] Update CMakeLists.txt
+
+Co-authored-by: Nick Porcino <meshula@hotmail.com>
+Signed-off-by: Darby Johnston <darbyjohnston@yahoo.com>
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0691c5c72..c9affdf19 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -139,7 +139,7 @@ endif()
+ # * v1.0.0 - 1.0
+ # * v1.1.0 - 1.1
+ #
+-set(OTIO_SOVERSION ${OTIO_VERSION_MAJOR}.${OTIO_VERSION_MINOR})
++math(EXPR OTIO_SOVERSION "${OTIO_VERSION_MAJOR} * 100 + ${OTIO_VERSION_MINOR}")
+ 
+ set(OTIO_RESOLVED_CXX_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+ 
+
+From bce45ec8ee73cd1cc6323f628cefd9016c873404 Mon Sep 17 00:00:00 2001
+From: Darby Johnston <darbyjohnston@yahoo.com>
+Date: Tue, 1 Apr 2025 17:06:26 -0700
+Subject: [PATCH 5/5] Update comment
+
+Signed-off-by: Darby Johnston <darbyjohnston@yahoo.com>
+---
+ CMakeLists.txt | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c9affdf19..48affda22 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -130,14 +130,16 @@ endif()
+ #
+ # OTIO currently designates the minor version number for breaking changes,
+ # e.g. v0.15, v0.16.0, v0.17.0, accordingly the SO version will be incremented
+-# to match. So for example, the following OTIO versions would map to these
+-# ABI versions:
++# to match. SO version must be monotically increasing, so the ABI version
++# should be computed as: major * 100 + revision. The third digit will never
++# implicate an ABI version change. So for example, the following OTIO versions
++# would map to these ABI versions:
+ #
+-# * v0.18.0 - 0.18
+-# * v0.19.0 - 0.19
+-# * v0.19.1 - 0.19 # No ABI changes with minor version changes
+-# * v1.0.0 - 1.0
+-# * v1.1.0 - 1.1
++# * v0.18.0 - 18
++# * v0.19.0 - 19
++# * v0.19.1 - 19 # No ABI changes with minor version changes
++# * v1.0.0 - 100
++# * v1.1.0 - 101
+ #
+ math(EXPR OTIO_SOVERSION "${OTIO_VERSION_MAJOR} * 100 + ${OTIO_VERSION_MINOR}")
+ 
