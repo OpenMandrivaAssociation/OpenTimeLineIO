@@ -12,6 +12,7 @@ Group:		System/Libraries
 BuildRequires:	cmake
 BuildRequires:	cmake(pybind11)
 BuildRequires:	cmake(RapidJSON)
+BuildRequires:	cmake(Imath)
 BuildRequires:	pkgconfig(python3)
 BuildRequires:	python%{pyver}dist(pybind11)
 BuildOption:	-DOTIO_CXX_INSTALL:BOOL=ON
@@ -57,6 +58,10 @@ Requires:	%{libname} = %{EVRD}
 %description -n python-opentimelineio
 Python bindings to the OpenTimeLineIO library
 
+%install -a
+# The CMake files get the install location of python binaries wrong
+mv %{buildroot}%{_libdir}/_*cpython*.so %{buildroot}%{python3_sitearch}/opentimelineio/
+
 %files -n %{libname}
 %{_libdir}/libopentime.so.0.17.0
 %{_libdir}/libopentimelineio.so.0.17.0
@@ -72,5 +77,3 @@ Python bindings to the OpenTimeLineIO library
 %files -n python-opentimelineio
 %{python3_sitearch}/opentimelineio
 %{python3_sitearch}/opentimelineview
-%{_libdir}/_opentime.cpython-*.so
-%{_libdir}/_otio.cpython-*.so
