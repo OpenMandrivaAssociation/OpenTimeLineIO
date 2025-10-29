@@ -3,7 +3,7 @@
 
 Name:		OpenTimeLineIO
 Version:	0.17.0
-Release:	1
+Release:	2
 Source0:	https://github.com/AcademySoftwareFoundation/OpenTimelineIO/archive/refs/tags/v%{version}/%{name}-%{version}.tar.gz
 Summary:	Editorial timeline information API
 URL:		https://github.com/AcademySoftwareFoundation/OpenTimelineIO
@@ -15,6 +15,7 @@ BuildRequires:	cmake(RapidJSON)
 BuildRequires:	cmake(Imath)
 BuildRequires:	pkgconfig(python3)
 BuildRequires:	python%{pyver}dist(pybind11)
+BuildOption:	-DCMAKE_CXX_STANDARD=23
 BuildOption:	-DOTIO_CXX_INSTALL:BOOL=ON
 BuildOption:	-DOTIO_PYTHON_INSTALL:BOOL=ON
 BuildOption:	-DOTIO_PYTHON_INSTALL_DIR=%{python3_sitearch}
