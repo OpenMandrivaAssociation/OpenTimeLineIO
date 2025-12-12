@@ -3,7 +3,7 @@
 
 Name:		OpenTimeLineIO
 Version:	0.17.0
-Release:	2
+Release:	3
 Source0:	https://github.com/AcademySoftwareFoundation/OpenTimelineIO/archive/refs/tags/v%{version}/%{name}-%{version}.tar.gz
 Summary:	Editorial timeline information API
 URL:		https://github.com/AcademySoftwareFoundation/OpenTimelineIO
