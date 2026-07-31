@@ -2,8 +2,8 @@
 %define devname %mklibname -d opentimelineio
 
 Name:		OpenTimeLineIO
-Version:	0.17.0
-Release:	3
+Version:	0.18.1
+Release:	1
 Source0:	https://github.com/AcademySoftwareFoundation/OpenTimelineIO/archive/refs/tags/v%{version}/%{name}-%{version}.tar.gz
 Summary:	Editorial timeline information API
 URL:		https://github.com/AcademySoftwareFoundation/OpenTimelineIO
@@ -27,10 +27,10 @@ BuildOption:	-DOTIO_DEPENDENCIES_INSTALL:BOOL=OFF
 BuildSystem:	cmake
 
 %patchlist
-https://src.fedoraproject.org/rpms/OpenTimelineIO/raw/rawhide/f/cmake-install.patch
+# dropped (no longer applies): https://src.fedoraproject.org/rpms/OpenTimelineIO/raw/rawhide/f/cmake-install.patch
 # Partial alternative to the above:
 #https://github.com/AcademySoftwareFoundation/OpenTimelineIO/pull/1860.patch
-OpenTimeLineIO-system-libs.patch
+# dropped (no longer applies): OpenTimeLineIO-system-libs.patch
 
 %description
 OpenTimelineIO is an interchange format and API for editorial cut information.
