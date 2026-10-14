@@ -20,6 +20,7 @@ BuildOption:	-DOTIO_CXX_INSTALL:BOOL=ON
 BuildOption:	-DOTIO_PYTHON_INSTALL:BOOL=ON
 BuildOption:	-DOTIO_PYTHON_INSTALL_DIR=%{python3_sitearch}
 BuildOption:	-DOTIO_FIND_IMATH:BOOL=ON
+BuildOption:	-DOTIO_FIND_RAPIDJSON:BOOL=ON
 BuildOption:	-DUSE_DEPS_IMATH:BOOL=OFF
 BuildOption:	-DOTIO_SHARED_LIBS:BOOL=ON
 BuildOption:	-DBUILD_SHARED_LIBS:BOOL=ON
@@ -31,6 +32,10 @@ BuildSystem:	cmake
 # Partial alternative to the above:
 #https://github.com/AcademySoftwareFoundation/OpenTimelineIO/pull/1860.patch
 # dropped (no longer applies): OpenTimeLineIO-system-libs.patch
+
+%prep -a
+# The GitHub archive does not ship the pybind11 submodule.
+sed -i 's/add_subdirectory(pybind11)/find_package(pybind11 CONFIG REQUIRED)/' src/deps/CMakeLists.txt
 
 %description
 OpenTimelineIO is an interchange format and API for editorial cut information.
@@ -60,22 +65,24 @@ Requires:	%{libname} = %{EVRD}
 %description -n python-opentimelineio
 Python bindings to the OpenTimeLineIO library
 
-%install -a
-# The CMake files get the install location of python binaries wrong
-mv %{buildroot}%{_libdir}/_*cpython*.so %{buildroot}%{python3_sitearch}/opentimelineio/
-
 %files -n %{libname}
-%{_libdir}/libopentime.so.0.17.0
-%{_libdir}/libopentimelineio.so.0.17.0
+# Upstream installs the shared libraries next to the Python package so the
+# extension's $ORIGIN rpath can see them. SONAME for 0.18 is 18.
+%{python3_sitearch}/opentimelineio/libopentime.so.*
+%{python3_sitearch}/opentimelineio/libopentimelineio.so.*
 
 %files -n %{devname}
 %{_includedir}/opentime
 %{_includedir}/opentimelineio
-%{_datadir}/cmake/opentime
-%{_datadir}/cmake/opentimelineio
-%{_libdir}/libopentime.so
-%{_libdir}/libopentimelineio.so
+%{_datadir}/opentime
+%{_datadir}/opentimelineio
+%{python3_sitearch}/opentimelineio/libopentime.so
+%{python3_sitearch}/opentimelineio/libopentimelineio.so
 
 %files -n python-opentimelineio
 %{python3_sitearch}/opentimelineio
+%exclude %{python3_sitearch}/opentimelineio/libopentime.so
+%exclude %{python3_sitearch}/opentimelineio/libopentime.so.*
+%exclude %{python3_sitearch}/opentimelineio/libopentimelineio.so
+%exclude %{python3_sitearch}/opentimelineio/libopentimelineio.so.*
 %{python3_sitearch}/opentimelineview
