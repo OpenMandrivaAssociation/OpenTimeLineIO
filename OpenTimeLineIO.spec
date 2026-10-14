@@ -35,7 +35,9 @@ BuildSystem:	cmake
 
 %prep -a
 # The GitHub archive does not ship the pybind11 submodule.
-sed -i 's/add_subdirectory(pybind11)/find_package(pybind11 CONFIG REQUIRED)/' src/deps/CMakeLists.txt
+# Imported pybind11 targets must be GLOBAL: this file is added from a
+# subdirectory, and the Python bindings are configured from the top level.
+sed -i 's/add_subdirectory(pybind11)/find_package(pybind11 CONFIG REQUIRED GLOBAL)/' src/deps/CMakeLists.txt
 
 %description
 OpenTimelineIO is an interchange format and API for editorial cut information.
