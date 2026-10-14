@@ -87,4 +87,3 @@ Python bindings to the OpenTimeLineIO library
 %exclude %{python3_sitearch}/opentimelineio/libopentime.so.*
 %exclude %{python3_sitearch}/opentimelineio/libopentimelineio.so
 %exclude %{python3_sitearch}/opentimelineio/libopentimelineio.so.*
-%{python3_sitearch}/opentimelineview
