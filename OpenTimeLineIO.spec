@@ -3,7 +3,7 @@
 
 Name:		OpenTimeLineIO
 Version:	0.18.1
-Release:	1
+Release:	2
 Source0:	https://github.com/AcademySoftwareFoundation/OpenTimelineIO/archive/refs/tags/v%{version}/%{name}-%{version}.tar.gz
 Summary:	Editorial timeline information API
 URL:		https://github.com/AcademySoftwareFoundation/OpenTimelineIO
@@ -39,6 +39,27 @@ BuildSystem:	cmake
 # subdirectory, and the Python bindings are configured from the top level.
 sed -i 's/add_subdirectory(pybind11)/find_package(pybind11 CONFIG REQUIRED GLOBAL)/' src/deps/CMakeLists.txt
 
+%install -a
+# Upstream installs the C++ libraries inside the Python package directory
+# and the CMake configs under /usr/share/opentime{,lineio}. Neither is on
+# the default linker or CMake search path, so kdenlive cannot see them.
+otio_py=%{buildroot}%{python3_sitearch}/opentimelineio
+mv ${otio_py}/libopentime.so* %{buildroot}%{_libdir}/
+mv ${otio_py}/libopentimelineio.so* %{buildroot}%{_libdir}/
+sed -i 's|%{python3_sitearch}/opentimelineio/|%{_libdir}/|g' \
+	%{buildroot}%{_datadir}/opentime/*.cmake \
+	%{buildroot}%{_datadir}/opentimelineio/*.cmake
+mkdir -p %{buildroot}%{_libdir}/cmake/OpenTime
+mkdir -p %{buildroot}%{_libdir}/cmake/OpenTimelineIO
+# The generated configs compute their prefix as two directories above
+# themselves, which is /usr only while they stay in /usr/share/<name>.
+cat > %{buildroot}%{_libdir}/cmake/OpenTime/OpenTimeConfig.cmake << 'EOF'
+include("%{_datadir}/opentime/OpenTimeConfig.cmake")
+EOF
+cat > %{buildroot}%{_libdir}/cmake/OpenTimelineIO/OpenTimelineIOConfig.cmake << 'EOF'
+include("%{_datadir}/opentimelineio/OpenTimelineIOConfig.cmake")
+EOF
+
 %description
 OpenTimelineIO is an interchange format and API for editorial cut information.
 OTIO contains information about the order and length of cuts and references to
@@ -68,22 +89,20 @@ Requires:	%{libname} = %{EVRD}
 Python bindings to the OpenTimeLineIO library
 
 %files -n %{libname}
-# Upstream installs the shared libraries next to the Python package so the
-# extension's $ORIGIN rpath can see them. SONAME for 0.18 is 18.
-%{python3_sitearch}/opentimelineio/libopentime.so.*
-%{python3_sitearch}/opentimelineio/libopentimelineio.so.*
+# SONAME for 0.18 is 18. The libraries are on the default linker path.
+# The Python extension has no RPATH and loads them from there.
+%{_libdir}/libopentime.so.*
+%{_libdir}/libopentimelineio.so.*
 
 %files -n %{devname}
 %{_includedir}/opentime
 %{_includedir}/opentimelineio
 %{_datadir}/opentime
 %{_datadir}/opentimelineio
-%{python3_sitearch}/opentimelineio/libopentime.so
-%{python3_sitearch}/opentimelineio/libopentimelineio.so
+%{_libdir}/cmake/OpenTime
+%{_libdir}/cmake/OpenTimelineIO
+%{_libdir}/libopentime.so
+%{_libdir}/libopentimelineio.so
 
 %files -n python-opentimelineio
 %{python3_sitearch}/opentimelineio
-%exclude %{python3_sitearch}/opentimelineio/libopentime.so
-%exclude %{python3_sitearch}/opentimelineio/libopentime.so.*
-%exclude %{python3_sitearch}/opentimelineio/libopentimelineio.so
-%exclude %{python3_sitearch}/opentimelineio/libopentimelineio.so.*
